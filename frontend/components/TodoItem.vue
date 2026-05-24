@@ -88,8 +88,21 @@
             </svg>
             {{ formattedDueDate }}
           </span>
+
+          <!-- Reminder info -->
+          <span
+            v-if="todo.reminder_at"
+            class="inline-flex items-center gap-1 text-xs text-secondary-500 dark:text-secondary-400"
+          >
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            {{ formattedReminderAt }}
+          </span>
+
+          <!-- Reminder badge -->
+          <ReminderBadge :reminder-at="todo.reminder_at" :status="todo.status" />
         </div>
-      </div>
 
       <!-- Action buttons -->
       <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -238,5 +251,11 @@ const formattedDueDate = computed(() => {
   if (!props.todo.due_date) return ''
   const date = new Date(props.todo.due_date + 'T00:00:00')
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+})
+
+const formattedReminderAt = computed(() => {
+  if (!props.todo.reminder_at) return ''
+  const date = new Date(props.todo.reminder_at)
+  return date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
 })
 </script>

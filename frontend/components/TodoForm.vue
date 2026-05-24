@@ -134,7 +134,7 @@
               </div>
 
               <!-- Due date field -->
-              <div class="mb-6">
+              <div class="mb-4">
                 <label for="todo-due-date" class="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1.5">
                   Due Date
                 </label>
@@ -148,6 +148,39 @@
                 />
                 <p v-if="errors.due_date" class="mt-1.5 text-sm text-red-600 dark:text-red-400" role="alert">
                   {{ errors.due_date }}
+                </p>
+              </div>
+
+              <!-- Reminder field -->
+              <div class="mb-6">
+                <label for="todo-reminder" class="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1.5">
+                  Reminder
+                </label>
+                <div class="flex items-center gap-2">
+                  <input
+                    id="todo-reminder"
+                    v-model="form.reminder_at"
+                    type="datetime-local"
+                    class="input-field flex-1"
+                    :disabled="submitting"
+                    data-testid="todo-form-reminder-input"
+                  />
+                  <button
+                    v-if="form.reminder_at"
+                    type="button"
+                    class="p-2 text-secondary-400 hover:text-red-500 transition-colors rounded-md hover:bg-secondary-100 dark:hover:bg-secondary-700"
+                    aria-label="Clear reminder"
+                    data-testid="todo-form-reminder-clear"
+                    :disabled="submitting"
+                    @click="form.reminder_at = ''"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <p class="mt-1 text-xs text-secondary-400 dark:text-secondary-500">
+                  Set a date and time to be reminded about this todo
                 </p>
               </div>
 
@@ -226,6 +259,7 @@ const form = reactive({
   priority: 'medium' as 'low' | 'medium' | 'high',
   due_date: '',
   status: 'pending' as 'pending' | 'in-progress' | 'done',
+  reminder_at: '',
 })
 
 const errors = reactive({
@@ -248,6 +282,7 @@ watch(() => props.visible, (newVal) => {
       form.priority = props.todo.priority
       form.due_date = props.todo.due_date ?? ''
       form.status = props.todo.status
+      form.reminder_at = props.todo.reminder_at ? toLocalDatetimeString(props.todo.reminder_at) : ''
     } else {
       // Reset to defaults for creating
       form.title = ''
@@ -255,6 +290,7 @@ watch(() => props.visible, (newVal) => {
       form.priority = 'medium'
       form.due_date = ''
       form.status = 'pending'
+      form.reminder_at = ''
     }
   }
 })
@@ -267,6 +303,7 @@ watch(() => props.todo, (newTodo) => {
     form.priority = newTodo.priority
     form.due_date = newTodo.due_date ?? ''
     form.status = newTodo.status
+    form.reminder_at = newTodo.reminder_at ? toLocalDatetimeString(newTodo.reminder_at) : ''
   }
 })
 
@@ -348,6 +385,12 @@ function handleSubmit() {
       data.status = form.status
     }
 
+    const newReminderAt = form.reminder_at ? toISOString(form.reminder_at) : null
+    const existingReminderAt = todo.reminder_at ?? null
+    if (newReminderAt !== existingReminderAt) {
+      data.reminder_at = newReminderAt
+    }
+
     emit('submit', data)
   } else {
     // For creating, send all fields
@@ -364,6 +407,10 @@ function handleSubmit() {
 
     if (form.due_date) {
       data.due_date = form.due_date
+    }
+
+    if (form.reminder_at) {
+      data.reminder_at = toISOString(form.reminder_at)
     }
 
     emit('submit', data)
@@ -390,4 +437,21 @@ defineExpose({
   setError,
   setSubmitting,
 })
+
+// Convert ISO string to local datetime-local input format
+function toLocalDatetimeString(isoStr: string): string {
+  const date = new Date(isoStr)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
+// Convert datetime-local input value to ISO 8601 UTC string
+function toISOString(localStr: string): string {
+  const date = new Date(localStr)
+  return date.toISOString()
+}
 </script>

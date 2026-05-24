@@ -305,6 +305,7 @@ interface Todo {
   priority: 'low' | 'medium' | 'high'
   due_date: string | null
   status: 'pending' | 'in-progress' | 'done'
+  reminder_at: string | null
   created_at: string
   updated_at: string | null
 }
@@ -316,8 +317,8 @@ interface TodoStats {
   overdue: number
 }
 
-type TodoCreate = Pick<Todo, 'title'> & Partial<Pick<Todo, 'description' | 'priority' | 'due_date' | 'status'>>
-type TodoUpdate = Partial<Pick<Todo, 'title' | 'description' | 'priority' | 'due_date' | 'status'>>
+type TodoCreate = Pick<Todo, 'title'> & Partial<Pick<Todo, 'description' | 'priority' | 'due_date' | 'status'>> & { reminder_at?: string }
+type TodoUpdate = Partial<Pick<Todo, 'title' | 'description' | 'priority' | 'due_date' | 'status'>> & { reminder_at?: string | null }
 ```
 
 ### JSON File Schemas
